@@ -1,20 +1,7 @@
-/*
-        Esp32 Websockets Client
+#include "c:/dev/threadmill/messageStruct.h"
 
-        This sketch:
-        1. Connects to a WiFi network
-        2. Connects to a Websockets server
-        3. Sends the websockets server a message ("Hello Server")
-        4. Prints all incoming messages while the connection is open
-
-        Hardware:
-        For this sketch you only need an ESP32 board.
-
-        Created 15/02/2019
-        By Gil Maimon
-        https://github.com/gilmaimon/ArduinoWebsockets
-
-*/
+// serialMessage outMsg;
+SerialMessage inMsg;
 
 // https://github.com/gilmaimon/ArduinoWebsockets
 #include <ArduinoWebsockets.h>
@@ -52,9 +39,9 @@ void onEventsCallback(WebsocketsEvent event, String data)
   }
 }
 
-String nowString;
 void setup()
 {
+  Serial2.begin(115200);
   Serial.begin(115200);
   // Connect to wifi
   WiFi.begin(ssid, password);
@@ -90,21 +77,51 @@ void setup()
 
   // run callback when messages are received
   client.onMessage([&](WebsocketsMessage message) {
-    Serial.print("Got Message: ");
-    Serial.println(message.data());
+    // Serial.print("Got Message: ");
+    // Serial.println(message.data());
 
-    Serial.print("Sending: ");
-    Serial.println(nowString);
-    client.send(nowString);
+    // Serial.print("Sending: ");
+    // Serial.println(nowString);
+    // client.send(nowString);
+    client.sendBinary((const char*) &inMsg, sizeof(SerialMessage));
   });
   client.onEvent(onEventsCallback);
+
+  sendSerialRequest();
 }
 unsigned long sendStamp = 0;
 unsigned long sendInterval = 30;
+
+unsigned long serialRequestStamp = 0;
+unsigned long serialRequestTimeOut = 500;
+
 void loop()
 {
   unsigned long now = millis();
-  nowString = now;
+
+  if(Serial2.available() >= sizeof(SerialMessage)){
+    int nrOfReceivedBytes = Serial2.readBytes((uint8_t*) &inMsg, sizeof(SerialMessage));
+    //Check for corrupt msg!
+    if(nrOfReceivedBytes != sizeof(SerialMessage) || inMsg.startChar != '<' || inMsg.endChar != '>'){
+      Serial2.print('!');
+      Serial.println("FUUUUCK!!!! CORRUPT MESSAGE ON SERIAL BUS!");
+      Serial.print("startChar: ");Serial.println(inMsg.startChar);
+      Serial.print("endChar: ");Serial.println(inMsg.endChar);
+      while(Serial2.available()){
+        Serial2.read();
+      }
+    }else{
+      Serial.print("SERIAL RECEIVED -->  ");
+      for (int i = 0; i < serialMessageNrOfTouchValues; i++)
+      {
+        Serial.printf("touchValue %i: %i \t", i, inMsg.touchValues[i]);
+      }
+      Serial.println();
+      sendSerialRequest();
+    }
+  }else if(now - serialRequestStamp > serialRequestTimeOut){
+    sendSerialRequest();
+  }
 
   // let the websockets client check for incoming messages
   if (client.available())
@@ -124,4 +141,10 @@ void loop()
     client.connect(url);
     Serial.println("client not available");
   }
+}
+
+void sendSerialRequest(){
+  serialRequestStamp = millis();
+  Serial.printf("requesting serial\n");
+  Serial2.print('.');
 }

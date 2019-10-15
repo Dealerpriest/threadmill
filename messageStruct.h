@@ -1,4 +1,9 @@
-struct serialMessage {
-  float capsenseValues[4];
-  float loadCellValues[4];
+struct SerialMessage {
+  char startChar = '<';
+  int touchValues[4];
+  int loadCellValues[4];
+  char endChar = '>';
 };
+
+const int serialMessageNrOfTouchValues = sizeof(SerialMessage::touchValues)/sizeof(int);
+const int serialMessageNrOfLoadCellValues = sizeof(SerialMessage::loadCellValues)/sizeof(int);
