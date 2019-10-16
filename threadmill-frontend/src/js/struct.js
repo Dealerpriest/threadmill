@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 /*!
  * C-Like Data Structure for JavaScript.
  *
