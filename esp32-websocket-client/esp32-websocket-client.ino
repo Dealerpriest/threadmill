@@ -28,6 +28,7 @@ void onEventsCallback(WebsocketsEvent event, String data)
   {
     Serial.println("Connnection Closed");
     delay(3000);
+    Serial.println("Trying to reconnect");
     client.connect(url);
   }
   else if (event == WebsocketsEvent::GotPing)
@@ -80,12 +81,7 @@ void setup()
   client.onMessage([&](WebsocketsMessage message) {
     // Serial.print("Got Message: ");
     // Serial.println(message.data());
-
-    // Serial.print("Sending: ");
-    // Serial.println(nowString);
-    // client.send(nowString);
     websocketReady = true;
-    // client.sendBinary((const char *)&inMsg, sizeof(SerialMessage));
   });
   client.onEvent(onEventsCallback);
 
@@ -105,7 +101,7 @@ void loop()
   {
     int nrOfReceivedBytes = Serial2.readBytes((uint8_t *)&inMsg, sizeof(SerialMessage));
     //Check for corrupt msg!
-    if (nrOfReceivedBytes != sizeof(SerialMessage) || inMsg.startChar != '<' || inMsg.endChar != '>')
+    if (nrOfReceivedBytes != sizeof(SerialMessage) || inMsg.startChar[0] != '<' || inMsg.endChar[0] != '>')
     {
       Serial2.print('!');
       Serial.println("FUUUUCK!!!! CORRUPT MESSAGE ON SERIAL BUS!");
@@ -120,14 +116,10 @@ void loop()
     }
     else
     {
-      // Serial.print("SERIAL RECEIVED -->  ");
-      // for (int i = 0; i < serialMessageNrOfTouchValues; i++)
-      // {
-      //   Serial.printf("touchValue %i: %i \t", i, inMsg.touchValues[i]);
-      // }
-      // Serial.println();
+      // printSerialData();
       if (websocketReady)
       {
+        printSocketData();
         client.sendBinary((const char *)&inMsg, sizeof(SerialMessage));
         websocketReady = false;
       }
@@ -142,14 +134,6 @@ void loop()
   // let the websockets client check for incoming messages
   if (client.available())
   {
-    // if (now - sendStamp > sendInterval)
-    // {
-    //   sendStamp = now;
-    //   // Serial.print("Sending: ");
-    //   // Serial.println(nowString);
-    //   // client.send(nowString);
-    // }
-
     client.poll();
   }
   else
@@ -158,6 +142,29 @@ void loop()
     Serial.println("client not available. RESTARTING");
     ESP.restart();
   }
+}
+
+void printSocketData()
+{
+  Serial.printf("Sending to socket: \n");
+  printInMsg();
+  Serial.write((const uint8_t *)&inMsg, sizeof(SerialMessage));
+  Serial.println();
+}
+
+void printSerialData()
+{
+  Serial.print("SERIAL RECEIVED -->  ");
+  printInMsg();
+}
+
+void printInMsg()
+{
+  for (int i = 0; i < serialMessageNrOfTouchValues; i++)
+  {
+    Serial.printf("touchValue %i: %i \t", i, inMsg.touchValues[i]);
+  }
+  Serial.println();
 }
 
 void sendSerialRequest()
