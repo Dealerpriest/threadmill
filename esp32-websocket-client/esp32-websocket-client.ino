@@ -9,10 +9,11 @@ SerialMessage inMsg;
 
 const char *ssid = "Interactive";      // Enter SSID
 const char *password = "wecanbuildit"; // Enter Password
-const char *websockets_server_host =
-    "ws://echo.websocket.org";              // Enter server adress
-const uint16_t websockets_server_port = 80; // Enter server port
-const char *url = "ws://echo.websocket.org:80/";
+
+// const char *url = "ws://echo.websocket.org:80/";
+const char *url = "ws://threadmill.herokuapp.com:80/";
+
+bool websocketReady = false;
 
 using namespace websockets;
 
@@ -83,7 +84,8 @@ void setup()
     // Serial.print("Sending: ");
     // Serial.println(nowString);
     // client.send(nowString);
-    client.sendBinary((const char*) &inMsg, sizeof(SerialMessage));
+    websocketReady = true;
+    // client.sendBinary((const char *)&inMsg, sizeof(SerialMessage));
   });
   client.onEvent(onEventsCallback);
 
@@ -99,27 +101,41 @@ void loop()
 {
   unsigned long now = millis();
 
-  if(Serial2.available() >= sizeof(SerialMessage)){
-    int nrOfReceivedBytes = Serial2.readBytes((uint8_t*) &inMsg, sizeof(SerialMessage));
+  if (Serial2.available() >= sizeof(SerialMessage))
+  {
+    int nrOfReceivedBytes = Serial2.readBytes((uint8_t *)&inMsg, sizeof(SerialMessage));
     //Check for corrupt msg!
-    if(nrOfReceivedBytes != sizeof(SerialMessage) || inMsg.startChar != '<' || inMsg.endChar != '>'){
+    if (nrOfReceivedBytes != sizeof(SerialMessage) || inMsg.startChar != '<' || inMsg.endChar != '>')
+    {
       Serial2.print('!');
       Serial.println("FUUUUCK!!!! CORRUPT MESSAGE ON SERIAL BUS!");
-      Serial.print("startChar: ");Serial.println(inMsg.startChar);
-      Serial.print("endChar: ");Serial.println(inMsg.endChar);
-      while(Serial2.available()){
+      Serial.print("startChar: ");
+      Serial.println(inMsg.startChar);
+      Serial.print("endChar: ");
+      Serial.println(inMsg.endChar);
+      while (Serial2.available())
+      {
         Serial2.read();
       }
-    }else{
-      Serial.print("SERIAL RECEIVED -->  ");
-      for (int i = 0; i < serialMessageNrOfTouchValues; i++)
+    }
+    else
+    {
+      // Serial.print("SERIAL RECEIVED -->  ");
+      // for (int i = 0; i < serialMessageNrOfTouchValues; i++)
+      // {
+      //   Serial.printf("touchValue %i: %i \t", i, inMsg.touchValues[i]);
+      // }
+      // Serial.println();
+      if (websocketReady)
       {
-        Serial.printf("touchValue %i: %i \t", i, inMsg.touchValues[i]);
+        client.sendBinary((const char *)&inMsg, sizeof(SerialMessage));
+        websocketReady = false;
       }
-      Serial.println();
       sendSerialRequest();
     }
-  }else if(now - serialRequestStamp > serialRequestTimeOut){
+  }
+  else if (now - serialRequestStamp > serialRequestTimeOut)
+  {
     sendSerialRequest();
   }
 
@@ -138,13 +154,15 @@ void loop()
   }
   else
   {
-    client.connect(url);
-    Serial.println("client not available");
+    // client.connect(url);
+    Serial.println("client not available. RESTARTING");
+    ESP.restart();
   }
 }
 
-void sendSerialRequest(){
+void sendSerialRequest()
+{
   serialRequestStamp = millis();
-  Serial.printf("requesting serial\n");
+  // Serial.printf("requesting serial\n");
   Serial2.print('.');
 }
