@@ -119,7 +119,7 @@ void loop()
       // printSerialData();
       if (websocketReady)
       {
-        printSocketData();
+        // printSocketData();
         client.sendBinary((const char *)&inMsg, sizeof(SerialMessage));
         websocketReady = false;
       }
