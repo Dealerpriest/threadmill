@@ -64,7 +64,8 @@ export default {
     },
     initWebSocket() {
       let wsUrl;
-      if (process.env.MODE_ENV == "production") {
+      console.log('NODE_ENV: ', process.env.NODE_ENV);
+      if (process.env.NODE_ENV == "production") {
         wsUrl = "ws://" + location.host;
       } else {
         wsUrl = process.env.VUE_APP_WS_SERVER_URL;

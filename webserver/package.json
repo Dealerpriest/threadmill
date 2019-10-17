@@ -1,11 +1,12 @@
 {
-  "name": "threadmill-web",
+  "name": "fredmill-web",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
   "scripts": {
     "postinstall": "npm install --prefix vue-frontend && npm run build --prefix vue-frontend",
-    "start": "node server.js"
+    "start": "node server.js",
+    "start-local": "npm run build --prefix vue-frontend && npm run start"
   },
   "author": "",
   "license": "ISC",
