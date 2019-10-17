@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "postinstall": "npm install @vue/cli --prefix vue-frontend && npm install --prefix vue-frontend && npm run build --prefix vue-frontend",
+    "postinstall": "npm install -g @vue/cli @vue/cli-service @vue/cli-plugin-babel @vue/cli-plugin-eslint --prefix vue-frontend && npm install --prefix vue-frontend && npm run build --prefix vue-frontend",
     "start": "node server.js"
   },
   "author": "",
