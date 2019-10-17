@@ -14,10 +14,10 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/precache-manifest.57476f8a1f63396c73f7cd0a0736d397.js"
+  "/precache-manifest.be18af950aaee95049b6ccac2109dc28.js"
 );
 
-workbox.core.setCacheNameDetails({prefix: "threadmill-frontend"});
+workbox.core.setCacheNameDetails({prefix: "fredmill-frontend"});
 
 /**
  * The workboxSW.precacheAndRoute() method efficiently caches and responds to

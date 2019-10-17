@@ -1,4 +1,4 @@
-## Threadmill project
+## Fredmill project
 
 Yo! This repo consists of several parts in different folders.
 

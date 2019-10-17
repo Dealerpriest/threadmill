@@ -4,21 +4,13 @@
 
 
 <script>
-// const Struct = require("struct");
-
 // Warning about this library.
 // I think it relies on the javascript engine having objects in a certain order.
 // Which is actually not part of the standard and hence not guaranteed.
 // https://github.com/firejune/struct.js/issues/1
 require("./js/struct.js");
-// import "./js/struct.js";
 
-// let struct = new window.Struct({
-//   sig: "uint8",
-//   mimeType: "uint8",
-//   id: "uint16",
-//   byteLength: "uint32"
-// });
+import p5 from "p5/lib/p5.min.js";
 
 export default {
   name: "app",
@@ -66,9 +58,9 @@ export default {
           }
         };
       };
-      // NOTE: Use p5 as an instance mode
-      const P5 = require("p5");
-      new P5(script);
+      // // NOTE: Use p5 as an instance mode
+      // const P5 = require("p5");
+      new p5(script);
     },
     initWebSocket() {
       let wsUrl;
