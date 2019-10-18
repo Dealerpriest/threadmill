@@ -1,6 +1,8 @@
 <template>
   <div id="app">
-    <div>
+    <div style>
+      <div id="p5-canvas-slot"></div>
+      <div>
       <ul>
         <li v-for="(value, index) in sensorData.touchValues" :key="index">
           touchSensor {{ index }}: {{ value }}
@@ -11,7 +13,7 @@
           loadCell {{ index }}: {{ value }}
         </li>
       </ul>
-      <div id="p5-canvas-slot"></div>
+      </div>
     </div>
   </div>
 </template>
