@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/precache-manifest.2590d14b7a60f850065b054e7882ba01.js"
+  "/precache-manifest.aa0965762e064a422c9fed1233fcebfc.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "fredmill-frontend"});
