@@ -6,7 +6,7 @@
   "scripts": {
     "postinstall": "npm install --prefix vue-frontend && npm run build --prefix vue-frontend",
     "start": "node server.js",
-    "start-local": "npm run build --prefix vue-frontend && npm run start"
+    "build-and-run": "npm run build --prefix vue-frontend && npm run start"
   },
   "author": "",
   "license": "ISC",

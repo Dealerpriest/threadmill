@@ -10,7 +10,7 @@ const wss = new WebSocket.Server({ server });
 
 wss.on("connection", function connection(ws) {
   ws.on("message", function incoming(message) {
-    console.log("received: %s", message);
+    // console.log("received: %s", message);
     //broadcast data to every client connected
     wss.clients.forEach(function each(client) {
       if (client.readyState === WebSocket.OPEN) {
@@ -24,4 +24,4 @@ wss.on("connection", function connection(ws) {
 
 app.use(express.static(__dirname + "/public"));
 
-server.listen(process.env.PORT || 80);
+server.listen(process.env.PORT || 8800);

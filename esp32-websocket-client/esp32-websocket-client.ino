@@ -12,9 +12,9 @@ const char *password = "wecanbuildit"; // Enter Password
 
 // const char *url = "ws://echo.websocket.org:80/";
 // const char *url = "ws://threadmill.herokuapp.com:80/";
-const char *url = "192.168.1.210:80/";
+const char *url = "ws://192.168.1.210:8800/";
 
-bool websocketReady = false;
+bool shouldSendSocketData = false;
 
 using namespace websockets;
 
@@ -68,14 +68,17 @@ void setup() {
   client.onMessage([&](WebsocketsMessage message) {
     // Serial.print("Got Message: ");
     // Serial.println(message.data());
-    websocketReady = true;
+    shouldSendSocketData = true;
   });
   client.onEvent(onEventsCallback);
 
   sendSerialRequest();
 }
-unsigned long sendStamp = 0;
-unsigned long sendInterval = 30;
+unsigned long printStamp = 0;
+unsigned long printInterval = 300;
+
+unsigned long socketSendStamp = 0;
+unsigned long socketSendTimeOut = 250;
 
 unsigned long serialRequestStamp = 0;
 unsigned long serialRequestTimeOut = 500;
@@ -99,16 +102,28 @@ void loop() {
         Serial2.read();
       }
     } else {
-      // printSerialData();
-      if (websocketReady) {
+      // Serial.print("SERIAL RECEIVED -->  ");
+      // printInMsg();
+      if (shouldSendSocketData) {
+        // Serial.printf("Sending to socket: \n");
         // printSocketData();
         client.sendBinary((const char *)&inMsg, sizeof(SerialMessage));
-        websocketReady = false;
+        socketSendStamp = now;
+        shouldSendSocketData = false;
       }
       sendSerialRequest();
     }
   } else if (now - serialRequestStamp > serialRequestTimeOut) {
     sendSerialRequest();
+  }
+
+  if (now - socketSendStamp > socketSendTimeOut) {
+    shouldSendSocketData = true;
+  }
+
+  if (now - printStamp > printInterval) {
+    printStamp = now;
+    printSocketData();
   }
 
   // let the websockets client check for incoming messages
@@ -122,20 +137,18 @@ void loop() {
 }
 
 void printSocketData() {
-  Serial.printf("Sending to socket: \n");
   printInMsg();
   Serial.write((const uint8_t *)&inMsg, sizeof(SerialMessage));
   Serial.println();
 }
 
-void printSerialData() {
-  Serial.print("SERIAL RECEIVED -->  ");
-  printInMsg();
-}
-
 void printInMsg() {
   for (int i = 0; i < serialMessageNrOfTouchValues; i++) {
     Serial.printf("touchValue %i: %i \t", i, inMsg.touchValues[i]);
+  }
+  Serial.println();
+  for (int i = 0; i < serialMessageNrOfLoadCellValues; i++) {
+    Serial.printf("loadCellValue %i: %i \t", i, inMsg.loadCellValues[i]);
   }
   Serial.println();
 }
