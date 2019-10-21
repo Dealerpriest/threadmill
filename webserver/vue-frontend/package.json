@@ -24,9 +24,8 @@
     "vue-template-compiler": "^2.6.10",
     "@vue/cli-plugin-typescript": "^4.0.4",
     "@vue/eslint-config-typescript": "^4.0.0",
-    "typescript": "~3.5.3"
-  },
-  "devDependencies": {
+    "typescript": "~3.5.3",
     "@types/p5": "^0.9.0"
-  }
+  },
+  "devDependencies": {}
 }
