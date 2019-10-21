@@ -23,16 +23,9 @@ export default function(p5: p5custom) {
     p5.background(40, 150, 70);
 
     p5.push();
-    let gravityPos: p5.Vector = centerOfGravity(
-      p5.sensorData.loadCellValues[0],
-      p5.sensorData.loadCellValues[1],
-      p5.sensorData.loadCellValues[2],
-      p5.sensorData.loadCellValues[3]
-    );
-    let totalWeight = p5.sensorData.loadCellValues.reduce(
-      (a: number, b: number) => a + b,
-      0
-    );
+    let gravityPos: p5.Vector = centerOfGravity(p5.sensorData.loadCellValues);
+    let totalWeight = arraySum(p5.sensorData.loadCellValues);
+
     var gradX = gravityPos.x * p5.width; // - p5.width / 2;
     var gradY = gravityPos.y * p5.height; // - p5.height / 2;
     let posX = gradX;
@@ -122,24 +115,50 @@ export default function(p5: p5custom) {
     p5.resizeCanvas(p5.windowHeight / 1.8, p5.windowHeight - 50);
   };
 
+  function arraySum(array: number[]) {
+    return array.reduce((a: number, b: number) => a + b, 0);
+  }
+
   // center of gravity formula:
   // X = (W1*X1 + W2*X2 + W3*X3 + W4*X4)/(W1+W2+W3+W4)
   // Y = (W1*Y1 + W2*Y2 + W3*Y3 + W4*Y4)/(W1+W2+W3+W4)
-  function centerOfGravity(
-    w0: number,
-    w1: number,
-    w2: number,
-    w3: number
-  ): p5.Vector {
+  // The array values must be in the following order: left-bottom, left-top, right-top, right-bottom (clockwise starting in the bottom left)
+  function centerOfGravity(values: number[]): p5.Vector {
     let centerOfGravity = p5.createVector();
     let startX = 0,
       startY = 0,
       endX = 1,
       endY = 1;
-    centerOfGravity.x =
-      (w0 * startX + w1 * startX + w2 * endX + w3 * endX) / (w0 + w1 + w2 + w3);
-    centerOfGravity.y =
-      (w0 * endY + w1 * startY + w2 * startY + w3 * endY) / (w0 + w1 + w2 + w3);
+
+    for (let i = 0; i < values.length; i++) {
+      if (
+        !values[i] ||
+        values[i] === undefined ||
+        values[i] === null ||
+        isNaN(values[i]) ||
+        !isFinite(values[i])
+      ) {
+        values[i] = 0;
+      }
+    }
+
+    if (arraySum(values) == 0) {
+      centerOfGravity.x = (endX - startX) / 2;
+      centerOfGravity.y = (endY - startY) / 2;
+    } else {
+      centerOfGravity.x =
+        (values[0] * startX +
+          values[1] * startX +
+          values[2] * endX +
+          values[3] * endX) /
+        (values[0] + values[1] + values[2] + values[3]);
+      centerOfGravity.y =
+        (values[0] * endY +
+          values[1] * startY +
+          values[2] * startY +
+          values[3] * endY) /
+        (values[0] + values[1] + values[2] + values[3]);
+    }
     return centerOfGravity;
   }
 
