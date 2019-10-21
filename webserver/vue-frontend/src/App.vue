@@ -3,16 +3,16 @@
     <div style>
       <div id="p5-canvas-slot"></div>
       <div>
-      <ul>
-        <li v-for="(value, index) in sensorData.touchValues" :key="index">
-          touchSensor {{ index }}: {{ value }}
-        </li>
-      </ul>
-      <ul>
-        <li v-for="(value, index) in sensorData.loadCellValues" :key="index">
-          loadCell {{ index }}: {{ value }}
-        </li>
-      </ul>
+        <ul>
+          <li v-for="(value, index) in sensorData.touchValues" :key="index">
+            touchSensor {{ index }}: {{ value }}
+          </li>
+        </ul>
+        <ul>
+          <li v-for="(value, index) in sensorData.loadCellValues" :key="index">
+            loadCell {{ index }}: {{ value }}
+          </li>
+        </ul>
       </div>
     </div>
   </div>
@@ -28,6 +28,9 @@ require("./js/struct.js");
 import p5init from "./js/p5-canvas.ts";
 
 import p5 from "p5/lib/p5.min.js";
+
+import NoSleep from "nosleep.js";
+let noSleep = new NoSleep();
 
 export default {
   name: "app",
@@ -97,6 +100,15 @@ export default {
   },
   mounted: function() {
     console.log("App mounted");
+    document.addEventListener(
+      "touchstart",
+      function enableNoSleep() {
+        console.log("enabling NoSleep library");
+        document.removeEventListener("touchstart", enableNoSleep);
+        noSleep.enable();
+      },
+      false
+    );
     this.structParser = new window.Struct({
       startChar: ["uint8", "####", 4],
       touchValues: ["int32", [-1, -1, -1, -1, -1, -1]],
