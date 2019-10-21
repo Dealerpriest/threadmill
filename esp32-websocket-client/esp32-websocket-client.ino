@@ -11,8 +11,8 @@ const char *ssid = "Interactive";      // Enter SSID
 const char *password = "wecanbuildit"; // Enter Password
 
 // const char *url = "ws://echo.websocket.org:80/";
-// const char *url = "ws://threadmill.herokuapp.com:80/";
-const char *url = "ws://192.168.1.210:8800/";
+const char *url = "ws://fredmill.herokuapp.com:80/";
+// const char *url = "ws://192.168.1.210:8800/";
 
 bool shouldSendSocketData = false;
 
