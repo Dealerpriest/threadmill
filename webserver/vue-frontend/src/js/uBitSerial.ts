@@ -13,7 +13,25 @@ export default class {
     //Don't now why we call this with 1 as argument, but everyone else seems to do that...
     await this.device.selectConfiguration(1);
     //the com port is apparently the 4th interface on the uBit...
-    return await this.device.claimInterface(4);
+    await this.device.claimInterface(4);
+
+    let controlResult = await this.device.controlTransferOut(
+      {
+        requestType: "class",
+        recipient: "interface",
+        request: 9,
+        value: 512,
+        index: 4
+      },
+      new Uint8Array([130, 0, 194, 1, 0])
+    );
+    console.log(controlResult);
+    return controlResult;
+    // 0: 130
+    // 1: 0
+    // 2: 194
+    // 3: 1
+    // 4: 0
   };
 
   readLoop = async () => {
@@ -44,7 +62,7 @@ export default class {
         let byteArray: Uint8Array = new Uint8Array(inResult.data.buffer);
         var str = "";
         let len = byteArray[1];
-        // console.log("len is ", len);
+        console.log("len is ", len);
         for (var i = 2; i < len + 2; ++i) {
           str += String.fromCharCode(byteArray[i]);
         }
