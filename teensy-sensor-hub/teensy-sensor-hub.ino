@@ -48,7 +48,7 @@ unsigned long printStamp = 0;
 unsigned long printInterval = 100;
 
 unsigned long uBitSendStamp = 0;
-unsigned long uBitSendInterval = 20;
+unsigned long uBitSendInterval = 50;
 
 void loop() {
 

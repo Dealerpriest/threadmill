@@ -3,6 +3,7 @@
     <div style>
       <div id="p5-canvas-slot"></div>
       <button @click="pairUbit">Connect uBit</button>
+      <p>serial: {{ uBitSerial ? uBitSerial.msg : "" }}</p>
       <div>
         <ul>
           <li v-for="(value, index) in sensorData.touchValues" :key="index">

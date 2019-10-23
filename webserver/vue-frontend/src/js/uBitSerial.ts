@@ -1,5 +1,6 @@
 export default class {
   device!: USBDevice;
+  msg: string = "";
   constructor() {
     this.init().then(this.readLoop);
   }
@@ -48,6 +49,7 @@ export default class {
           str += String.fromCharCode(byteArray[i]);
         }
         if (str.length > 0) {
+          this.msg = str;
           console.log(str);
 
           // console.log("data:", byteArray);
@@ -56,7 +58,7 @@ export default class {
           // console.log("nothing received");
           setTimeout(() => {
             this.readLoop();
-          }, 5);
+          }, 25);
         }
       } else {
         console.log("read failed");
