@@ -35,8 +35,10 @@ void measureLoadCellReferenceValues() {
 }
 
 void setup() {
+  pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(115200);
   Serial2.begin(115200);
+  Serial3.begin(115200);
 
   measureTouchReferenceValues();
   // measureLoadCellReferenceValues();
@@ -45,10 +47,34 @@ void setup() {
 unsigned long printStamp = 0;
 unsigned long printInterval = 100;
 
+unsigned long uBitSendStamp = 0;
+unsigned long uBitSendInterval = 20;
+
 void loop() {
+
   unsigned long now = millis();
 
-  for (int i = 0; i < nrOfLoadCells; i++) {
+  if (now - uBitSendStamp > uBitSendInterval) {
+    uBitSendStamp = now;
+    // Serial3.printf("%i#", outMsg.touchValues[0]);
+
+    for (int i = 0; i < serialMessageNrOfTouchValues; i++) {
+      Serial3.printf("%i,", outMsg.touchValues[i]);
+      Serial.printf("%i,", outMsg.touchValues[i]);
+    }
+    Serial3.printf("$");
+    Serial.printf("$");
+    for (int i = 0; i < serialMessageNrOfLoadCellValues; i++) {
+      Serial3.printf("%i,", outMsg.loadCellValues[i]);
+      Serial.printf("%i,", outMsg.loadCellValues[i]);
+    }
+    Serial3.printf("#");
+    Serial.printf("#");
+    // Serial3.write((const char *)&outMsg, sizeof(SerialMessage));
+    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+  }
+
+  for (int i = 0; i < serialMessageNrOfLoadCellValues; i++) {
     loadCellValues[i] = analogRead(loadCellPins[i]);
     outMsg.loadCellValues[i] = loadCellValues[i];
   }
@@ -69,7 +95,7 @@ void loop() {
     }
   }
 
-  if (now - printStamp > printInterval) {
+  if (false && now - printStamp > printInterval) {
     printStamp = now;
     printMessage(outMsg);
   }

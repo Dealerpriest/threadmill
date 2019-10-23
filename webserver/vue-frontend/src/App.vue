@@ -2,6 +2,7 @@
   <div id="app">
     <div style>
       <div id="p5-canvas-slot"></div>
+      <button @click="pairUbit">Connect uBit</button>
       <div>
         <ul>
           <li v-for="(value, index) in sensorData.touchValues" :key="index">
@@ -27,6 +28,8 @@
 require("./js/struct.js");
 import p5init from "./js/p5-canvas.ts";
 
+import WebSerial from "./js/uBitSerial.ts";
+
 import p5 from "p5/lib/p5.min.js";
 
 import NoSleep from "nosleep.js";
@@ -36,6 +39,7 @@ export default {
   name: "app",
   data: function() {
     return {
+      uBitSerial: undefined,
       // webSocket: undefined,
       sensorData: {
         touchValues: [0, 0, 0, 0, 0, 0],
@@ -49,6 +53,9 @@ export default {
     };
   },
   methods: {
+    pairUbit() {
+      this.uBitSerial = new WebSerial();
+    },
     startP5() {
       // // NOTE: Use p5 as an instance mode
       let sketch = new p5(p5init, document.querySelector("#p5-canvas-slot"));
@@ -100,12 +107,14 @@ export default {
   },
   mounted: function() {
     console.log("App mounted");
+
     document.addEventListener(
       "touchstart",
       function enableNoSleep() {
         console.log("enabling NoSleep library");
-        document.removeEventListener("touchstart", enableNoSleep);
         noSleep.enable();
+        document.body.style.backgroundColor = "green";
+        document.removeEventListener("touchstart", enableNoSleep);
       },
       false
     );
