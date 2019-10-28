@@ -62,7 +62,7 @@ export default class {
         let byteArray: Uint8Array = new Uint8Array(inResult.data.buffer);
         var str = "";
         let len = byteArray[1];
-        console.log("len is ", len);
+        // console.log("len is ", len);
         for (var i = 2; i < len + 2; ++i) {
           str += String.fromCharCode(byteArray[i]);
         }
