@@ -21,6 +21,11 @@ export default function(p5: p5custom) {
   // NOTE: Draw is here
   p5.draw = () => {
     p5.background(40, 150, 70);
+    if (!p5.sensorData) {
+      p5.textAlign(p5.CENTER, p5.CENTER);
+      p5.text("no sensordata (yet)", p5.width / 2, p5.height / 2);
+      return;
+    }
 
     p5.push();
     let gravityPos: p5.Vector = centerOfGravity(p5.sensorData.loadCellValues);
@@ -131,13 +136,7 @@ export default function(p5: p5custom) {
       endY = 1;
 
     for (let i = 0; i < values.length; i++) {
-      if (
-        !values[i] ||
-        values[i] === undefined ||
-        values[i] === null ||
-        isNaN(values[i]) ||
-        !isFinite(values[i])
-      ) {
+      if (!values[i] || values[i] === undefined || values[i] === null || isNaN(values[i]) || !isFinite(values[i])) {
         values[i] = 0;
       }
     }
@@ -147,16 +146,10 @@ export default function(p5: p5custom) {
       centerOfGravity.y = (endY - startY) / 2;
     } else {
       centerOfGravity.x =
-        (values[0] * startX +
-          values[1] * startX +
-          values[2] * endX +
-          values[3] * endX) /
+        (values[0] * startX + values[1] * startX + values[2] * endX + values[3] * endX) /
         (values[0] + values[1] + values[2] + values[3]);
       centerOfGravity.y =
-        (values[0] * endY +
-          values[1] * startY +
-          values[2] * startY +
-          values[3] * endY) /
+        (values[0] * endY + values[1] * startY + values[2] * startY + values[3] * endY) /
         (values[0] + values[1] + values[2] + values[3]);
     }
     return centerOfGravity;
@@ -166,7 +159,7 @@ export default function(p5: p5custom) {
     const r = 60,
       g = 255,
       b = 80;
-    return value > 200 ? p5.color(r, g, b, 230) : p5.color(r, g, b, 120);
+    return value > 800 ? p5.color(r, g, b, 230) : p5.color(r, g, b, 120);
   }
 
   function xToPixel(x: number) {

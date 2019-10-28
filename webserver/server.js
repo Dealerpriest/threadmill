@@ -9,6 +9,7 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 wss.on("connection", function connection(ws) {
+  console.log("client connected");
   ws.on("message", function incoming(message) {
     // console.log("received: %s", message);
     //broadcast data to every client connected
@@ -18,6 +19,8 @@ wss.on("connection", function connection(ws) {
       }
     });
   });
+
+  ws.on("close", () => console.log("client disconnected"));
 
   ws.send("something");
 });

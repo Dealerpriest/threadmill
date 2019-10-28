@@ -1,19 +1,36 @@
 #include "c:/dev/fredmill/messageStruct.h"
+#include <IotWebConf.h>
+
+// -- Initial name of the Thing. Used e.g. as SSID of the own Access Point.
+const char thingName[] = "fredmillConfig";
+
+// -- Initial password to connect to the Thing, when it creates an own Access Point.
+const char wifiInitialApPassword[] = "12341234";
+
+#define CONFIG_VERSION "fred1"
+
+DNSServer dnsServer;
+WebServer server(80);
+
+IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
 
 // serialMessage outMsg;
 SerialMessage inMsg;
 
 // https://github.com/gilmaimon/ArduinoWebsockets
 #include <ArduinoWebsockets.h>
-#include <WiFi.h>
+// #include <WiFi.h>
 
-const char *ssid = "fredmill";     // Enter SSID
-const char *password = "12341234"; // Enter Password
+#define LED_BUILTIN 22
+
+// const char *ssid = "IAMAIOTDEVICE";      // Enter SSID
+// const char *password = "verysafepassword"; // Enter Password
 
 // const char *url = "ws://echo.websocket.org:80/";
 const char *url = "ws://fredmill.herokuapp.com:80/";
 // const char *url = "ws://192.168.1.210:8800/";
 
+bool webSocketConnected = false;
 bool shouldSendSocketData = false;
 
 using namespace websockets;
@@ -44,31 +61,48 @@ void onEventsCallback(WebsocketsEvent event, String data)
 
 void setup()
 {
+  pinMode(LED_BUILTIN, OUTPUT);
   Serial2.begin(115200);
   Serial.begin(115200);
+
+  // -- Initializing the configuration.
+  iotWebConf.init();
+  // -- Set up required URL handlers on the web server.
+  server.on("/", [] { iotWebConf.handleConfig(); });
+  server.on("/config", [] { iotWebConf.handleConfig(); });
+  server.onNotFound([]() { iotWebConf.handleNotFound(); });
+
   // Connect to wifi
-  WiFi.begin(ssid, password);
+  // WiFi.begin(ssid, password);
 
-  // Wait some time to connect to wifi
-  for (int i = 0; i < 10 && WiFi.status() != WL_CONNECTED; i++)
-  {
-    Serial.print(".");
-    delay(1000);
-  }
+  // // Wait some time to connect to wifi
+  // for (int i = 0; i < 10 && WiFi.status() != WL_CONNECTED; i++)
+  // {
+  //   Serial.print(".");
+  //   delay(1000);
+  // }
 
-  // Check if connected to wifi
-  if (WiFi.status() != WL_CONNECTED)
-  {
-    Serial.println("No Wifi!");
-    return;
-  }
+  // // Check if connected to wifi
+  // if (WiFi.status() != WL_CONNECTED)
+  // {
+  //   Serial.println("No Wifi!");
+  //   return;
+  // }
 
+  iotWebConf.setWifiConnectionCallback(&wifiConnected);
+
+  // sendSerialRequest();
+}
+
+void wifiConnected()
+{
   Serial.println("Connected to Wifi, Connecting to server.");
+  // return;
   // try to connect to Websockets server
-  bool connected = client.connect(url);
+  webSocketConnected = client.connect(url);
   // client.connect(websockets_server_host, websockets_server_port, "/");
 
-  if (connected)
+  if (webSocketConnected)
   {
     Serial.println("Connected!");
     client.send("Hello Server");
@@ -85,9 +119,8 @@ void setup()
     shouldSendSocketData = true;
   });
   client.onEvent(onEventsCallback);
-
-  sendSerialRequest();
 }
+
 unsigned long printStamp = 0;
 unsigned long printInterval = 300;
 
@@ -100,6 +133,9 @@ unsigned long serialRequestTimeOut = 500;
 void loop()
 {
   unsigned long now = millis();
+
+  // -- doLoop should be called as frequently as possible.
+  iotWebConf.doLoop();
 
   if (Serial2.available() >= sizeof(SerialMessage))
   {
@@ -124,13 +160,14 @@ void loop()
     {
       // Serial.print("SERIAL RECEIVED -->  ");
       // printInMsg();
-      if (shouldSendSocketData)
+      if (webSocketConnected && shouldSendSocketData)
       {
         // Serial.printf("Sending to socket: \n");
         // printSocketData();
         client.sendBinary((const char *)&inMsg, sizeof(SerialMessage));
         socketSendStamp = now;
         shouldSendSocketData = false;
+        digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
       }
       sendSerialRequest();
     }
@@ -152,15 +189,25 @@ void loop()
   }
 
   // let the websockets client check for incoming messages
-  if (client.available())
+  if (webSocketConnected)
   {
-    client.poll();
+    if (client.available())
+    {
+      client.poll();
+    }
+    else
+    {
+      Serial.println("client not available. Trying to reconnect");
+      webSocketConnected = false;
+      webSocketConnected = client.connect(url);
+
+      // Serial.println("client not available. RESTARTING");
+      // ESP.restart();
+    }
   }
   else
   {
-    // client.connect(url);
-    Serial.println("client not available. RESTARTING");
-    ESP.restart();
+    webSocketConnected = client.connect(url);
   }
 }
 
@@ -190,4 +237,23 @@ void sendSerialRequest()
   serialRequestStamp = millis();
   // Serial.printf("requesting serial\n");
   Serial2.print('.');
+}
+
+/**
+ * Handle web requests to "/" path.
+ */
+void handleRoot()
+{
+  // -- Let IotWebConf test and handle captive portal requests.
+  if (iotWebConf.handleCaptivePortal())
+  {
+    // -- Captive portal request were already served.
+    return;
+  }
+  String s = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/>";
+  s += "<title>IotWebConf 01 Minimal</title></head><body>Hello world!";
+  s += "Go to <a href='config'>configure page</a> to change settings.";
+  s += "</body></html>\n";
+
+  server.send(200, "text/html", s);
 }
