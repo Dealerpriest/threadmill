@@ -62,6 +62,7 @@ void onEventsCallback(WebsocketsEvent event, String data)
 void setup()
 {
   pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH);
   Serial2.begin(115200);
   Serial.begin(115200);
 
@@ -97,6 +98,8 @@ void setup()
 void wifiConnected()
 {
   Serial.println("Connected to Wifi, Connecting to server.");
+
+  digitalWrite(LED_BUILTIN, LOW);
   // return;
   // try to connect to Websockets server
   webSocketConnected = client.connect(url);
@@ -182,7 +185,7 @@ void loop()
     shouldSendSocketData = true;
   }
 
-  if (now - printStamp > printInterval)
+  if (webSocketConnected && now - printStamp > printInterval)
   {
     printStamp = now;
     printSocketData();
