@@ -159,7 +159,7 @@ export default function(p5: p5custom) {
     const r = 60,
       g = 255,
       b = 80;
-    return value > 800 ? p5.color(r, g, b, 230) : p5.color(r, g, b, 120);
+    return value > 3000 ? p5.color(r, g, b, 230) : p5.color(r, g, b, 120);
   }
 
   function xToPixel(x: number) {

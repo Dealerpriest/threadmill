@@ -169,7 +169,8 @@ export default {
       let wsUrl;
       console.log("NODE_ENV: ", process.env.NODE_ENV);
       if (process.env.NODE_ENV == "production") {
-        wsUrl = "wss://" + location.host;
+        let protocol = location.protocol == "https:"?"wss:":"ws:"
+        wsUrl = protocol + "//" + location.host;
       } else {
         wsUrl = process.env.VUE_APP_WS_SERVER_URL;
       }

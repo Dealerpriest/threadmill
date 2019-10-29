@@ -1,12 +1,26 @@
 const http = require("http");
 const WebSocket = require("ws");
 const express = require("express");
-var path = require("path");
+const request = require("request");
+// var path = require("path");
+const internalIp = require("internal-ip");
 
 const app = express();
 
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+
+let proxyEnabled = process.argv[2] && process.argv[2] == "proxy" ? true : false;
+
+let port = process.env.PORT || 8800;
+let serverIp = internalIp.v4.sync();
+console.log(port);
+
+console.log(serverIp);
+
+console.log("http://" + serverIp + ":" + port + "/");
+
+console.log("proxyEnabled: " + proxyEnabled);
 
 wss.on("connection", function connection(ws) {
   console.log("client connected");
@@ -25,6 +39,17 @@ wss.on("connection", function connection(ws) {
   ws.send("something");
 });
 
-app.use(express.static(__dirname + "/public"));
+if (proxyEnabled) {
+  app.use("/", function(req, res) {
+    // console.log("proxy triggered");
+    var apiUrl = "https://fredmill.herokuapp.com";
+    // console.log(apiUrl);
+    // console.log(req.url);
+    var url = apiUrl + req.url;
+    request(url).pipe(res);
+  });
+} else {
+  app.use(express.static(__dirname + "/public"));
+}
 
-server.listen(process.env.PORT || 8800);
+server.listen(port);
