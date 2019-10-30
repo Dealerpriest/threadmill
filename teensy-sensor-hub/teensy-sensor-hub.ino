@@ -1,4 +1,5 @@
 #include "c:/dev/fredmill/messageStruct.h"
+#include "touchAdvanced.c"
 
 SerialMessage outMsg;
 
@@ -22,7 +23,7 @@ void measureTouchReferenceValues()
     delay(10);
     for (int k = 0; k < nrOfMeasures; k++)
     {
-      int value = touchRead(touchPins[i]);
+      int value = readTouchValue(touchPins[i]);
       Serial.printf("calibration touch %i index %i: %i\n", i, k, value);
       touchReferenceValues[i] += value;
       delay(1);
@@ -113,7 +114,7 @@ void loop()
 
   for (int i = 0; i < serialMessageNrOfTouchValues; i++)
   {
-    touchValues[i] = touchRead(touchPins[i]);
+    touchValues[i] = readTouchValue(touchPins[i]);
     outMsg.touchValues[i] = touchValues[i] - touchReferenceValues[i];
   }
 
@@ -170,4 +171,9 @@ void printMessage(SerialMessage msg)
   }
 
   Serial.println();
+}
+
+//defaults are current = 2, nscans = 9, prescaler = 2
+int readTouchValue(int _pin){
+  return touchReadAdvanced(_pin, 15, 8, 1);
 }
