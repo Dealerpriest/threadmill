@@ -173,7 +173,15 @@ void printMessage(SerialMessage msg)
   Serial.println();
 }
 
+// Default settings give approx 0.02 pF sensitivity and 1200 pF range
+// Lower current, higher number of scans, and higher prescaler
+// increase sensitivity, but the trade-off is longer measurement
+// time and decreased range.
+// #define CURRENT 2  // 0 to 15 - current to use, value is 2*(current+1)
+// #define NSCAN 9    // number of times to scan, 0 to 31, value is nscan+1
+// #define PRESCALE 2 // prescaler, 0 to 7 - value is 2^(prescaler+1)
 //defaults are current = 2, nscans = 9, prescaler = 2
-int readTouchValue(int _pin){
-  return touchReadAdvanced(_pin, 15, 8, 1);
+int readTouchValue(int _pin)
+{
+  return touchReadAdvanced(_pin, 15, 20, 5);
 }
